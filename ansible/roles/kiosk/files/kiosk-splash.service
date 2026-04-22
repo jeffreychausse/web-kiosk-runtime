@@ -1,0 +1,15 @@
+[Unit]
+Description=Dynamic Wayland Splash Screen
+After=network-online.target snap.ubuntu-frame.daemon.service
+Requires=snap.ubuntu-frame.daemon.service
+
+[Service]
+User=root
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=XDG_RUNTIME_DIR=/run/user/0
+ExecStart=/opt/kiosk-splash/gtk-splash.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target

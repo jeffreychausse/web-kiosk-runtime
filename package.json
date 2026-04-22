@@ -1,0 +1,23 @@
+{
+  "name": "kiosk-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-run-session -- electron . --no-sandbox --ozone-platform=wayland --enable-features=VaapiVideoDecoder,CanvasOopRasterization --use-gl=angle --use-angle=gl --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --disable-webgl2-gl-context"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^40.9.2"
+  },
+  "dependencies": {
+    "@momentfactory/node-mf-tasktoolkit-dll": "file:./@momentfactory_node-mf-tasktoolkit-dll-3.8.3/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/package",
+    "electron-log": "^5.4.3",
+    "electron-store": "^6.0.1",
+    "express": "^5.2.1",
+    "koffi": "^2.8.11"
+  }
+}

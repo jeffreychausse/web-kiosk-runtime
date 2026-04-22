@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Default/Waiting state style*/
+        body {
+            background: linear-gradient(135deg, #0a0a2a, #000000);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            transition: background 0.5s ease;
+        }
+        /* Error state style */
+        body.is-error {
+            background: linear-gradient(135deg, #2a0a0a, #000000);
+        }
+
+        h1 { font-size: 3em; color: #55aaff; margin-bottom: 10px; }
+        body.is-error h1 { color: #ff5555; }
+
+        .icon { 
+            width: 200px; 
+            height: auto;
+            margin-bottom: 20px; 
+            filter: drop-shadow(0 0 10px rgba(85, 170, 255, 0.5));
+        }
+
+        body.is-error .icon { 
+            filter: drop-shadow(0 0 10px rgba(255, 85, 85, 0.8));
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 1px solid rgba(85, 170, 255, 0.3);
+            max-width: 80%;
+        }
+        body.is-error .message { border-color: rgba(255, 85, 85, 0.3); }
+
+        #url-display {
+            display: block;
+            margin-top: 15px;
+            color: #00ffaa;
+            font-family: monospace;
+            word-break: break-all;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        body.is-error #url-display { color: #ffaa00; }
+    </style>
+</head>
+<body>
+    <img src="assets/hourglass.png" alt="Status Icon" class="icon" id="status-icon">
+    
+    <h1 id="status-title">System Ready</h1>
+    <div class="message">
+        <p id="status-text">Kiosk is online and waiting for a URL command.</p>
+        <span id="url-display">Port: 3333</span>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const failedUrl = params.get('failedUrl');
+        
+        const title = document.getElementById('status-title');
+        const text = document.getElementById('status-text');
+        const display = document.getElementById('url-display');
+        
+        // Grab the image element so we can control it
+        const icon = document.getElementById('status-icon');
+
+        if (failedUrl) {
+            // ERROR STATE: We tried to load something and it failed
+            document.body.classList.add('is-error');
+            
+            icon.src = "assets/sad-cat.png"; 
+            
+            title.innerText = "Connection Error";
+            text.innerText = "The requested destination is currently unreachable:";
+            display.innerText = failedUrl;
+        } else {
+            // WAITING STATE: First boot, no URL saved yet
+            
+            icon.src = "assets/hourglass.png"; 
+            
+            title.innerText = "Waiting for URL";
+            text.innerText = "Send a POST request to the Kiosk API to begin.";
+            display.innerText = "Listening on port 3333...";
+        }
+    </script>
+</body>
+</html>

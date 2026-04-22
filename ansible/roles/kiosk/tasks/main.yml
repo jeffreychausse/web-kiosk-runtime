@@ -1,0 +1,111 @@
+---
+    # --- 1. System Dependencies & Drivers ---
+    - name: Install Base Desktop Libraries & GPU Drivers
+      ansible.builtin.apt:
+        update_cache: yes
+        pkg:
+          # Base Desktop Libraries (Electron/GTK requirements)
+          - libnss3
+          - libatk1.0-0
+          - libatk-bridge2.0-0
+          - libgbm1
+          - libx11-xcb1
+          - libasound2t64
+          - libgtk-3-0t64
+          # Intel GPU & Video Drivers (VA-API/WebGL)
+          - libva-drm2
+          - libva-x11-2
+          - va-driver-all
+          - intel-media-va-driver-non-free
+          - vainfo
+          - mesa-utils
+          - libegl1
+          - libgles2
+          - libgl1-mesa-dri
+          - libglx-mesa0
+          - glmark2-es2-wayland
+          - intel-gpu-tools
+          # Build Tools (Necessary for compiled Node modules later)
+          - build-essential
+          # Python libraries (Required for dynamic splash screen)
+          - python3-gi
+          - gir1.2-gtk-3.0
+          # Other
+          - libpaho-mqtt-dev
+
+    # --- 2. Node.js Installation ---
+    - name: Add NodeSource repository for Node.js LTS
+      ansible.builtin.shell: curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+      args:
+        # This checks if the repository file exists, preventing the script from running twice
+        creates: /etc/apt/sources.list.d/nodesource.list
+
+    - name: Ensure Node.js and npm are installed
+      ansible.builtin.apt:
+        name: nodejs
+        # Using 'latest' forces it to upgrade the default Ubuntu version to the NodeSource version
+        state: latest 
+        update_cache: yes   
+
+    # --- 3. Kiosk Display (Ubuntu Frame) ---
+    - name: Install Ubuntu Frame via Snap
+      community.general.snap:
+        name: ubuntu-frame
+        state: present
+
+    - name: Configure Ubuntu Frame settings
+      ansible.builtin.shell: |
+        snap set ubuntu-frame launcher=false
+        snap set ubuntu-frame daemon=true
+      changed_when: false # Prevents the "changed" status
+
+    # --- 4. Permissions & Security ---
+    - name: Add mofa to hardware groups (video, render, input)
+      ansible.builtin.user:
+        name: mofa
+        groups: video,render,input
+        append: yes
+
+    - name: Open firewall for Remote URL API
+      community.general.ufw:
+        rule: allow
+        port: "{{ PORT }}"
+        proto: tcp
+
+    # --- 5. Start Service ---
+    - name: Ensure Ubuntu Frame is started
+      community.general.snap:
+        name: ubuntu-frame
+        state: enabled
+    
+    # --- 6. Dynamic Splash Screen Service ---
+    - name: Create splash app directory in /opt
+      ansible.builtin.file:
+        path: /opt/kiosk-splash
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Deploy GTK splash screen script
+      ansible.builtin.copy:
+        src: gtk-splash.py
+        dest: /opt/kiosk-splash/gtk-splash.py
+        owner: root
+        group: root
+        mode: '0755' 
+
+    - name: Copy kiosk-splash systemd service file
+      ansible.builtin.copy:
+        src: kiosk-splash.service
+        dest: /etc/systemd/system/kiosk-splash.service
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Reload systemd and enable splash service
+      ansible.builtin.systemd:
+        name: kiosk-splash.service
+        daemon_reload: yes
+        enabled: yes
+        state: started

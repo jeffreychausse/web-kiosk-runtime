@@ -1,0 +1,9 @@
+- name: Deploy Ubuntu Frame Kiosk locally
+  hosts: localhost
+  connection: local
+  become: true
+  vars:
+    PORT: "3333"
+
+  roles:
+    - kiosk
