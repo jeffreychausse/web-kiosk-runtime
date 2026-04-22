@@ -8,4 +8,8 @@ sudo env PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-r
 
 With tasktoolkit, run:
 
+<<<<<<< HEAD
 sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/package/bin/Ubuntu/x64/" PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-run-session -- ./node_modules/.bin/electron . --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
+=======
+sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/package/bin/Ubuntu/x64/" PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-run-session -- ./node_modules/.bin/electron . --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
+>>>>>>> de1fc95bb6ab02b8248eb6a178d203b743085154
