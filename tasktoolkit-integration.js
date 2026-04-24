@@ -20,7 +20,7 @@ const CONFIG = {
 };
 
 // Load the Tasktoolkit library
-const CCTasktoolkit = require('./@momentfactory_node-mf-tasktoolkit-dll-3.8.3/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/package/Tasktoolkit');
+const CCTasktoolkit = require('./lib/tasktoolkit/Tasktoolkit');
 
 // Module state
 let toolkitProvider = null;
