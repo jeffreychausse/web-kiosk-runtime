@@ -90,14 +90,19 @@ sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/lib" PATH=$PATH \
 
 The app exposes an HTTP API on the configured `PORT` (default: 3333).
 
-### Set URL
-```bash
-curl -X POST http://localhost:3333/url -H "Content-Type: application/json" -d '{"url": "https://example.com"}'
-```
-
 ### Get Current URL
 ```bash
 curl http://localhost:3333/url
+```
+
+### Set URL
+```bash
+curl -X POST http://localhost:3333/set-url -H "Content-Type: application/json" -d '{"url": "https://example.com"}'
+```
+
+### Reload Page
+```bash
+curl -X POST http://localhost:3333/reload
 ```
 
 ## Logs

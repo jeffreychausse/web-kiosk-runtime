@@ -8,10 +8,14 @@ const express = require('express');
 
 /**
  * Create and configure the API server
- * @param {Function} setUrlCallback - Function to call when URL is set
+ * @param {Object} callbacks - Callback functions for kiosk control
+ * @param {Function} callbacks.setUrl - Function to set the kiosk URL
+ * @param {Function} callbacks.getUrl - Function to get the current URL
+ * @param {Function} callbacks.reloadPage - Function to reload the current page
  * @returns {express.Application} The configured Express app
  */
-function createApiServer(setUrlCallback) {
+function createApiServer(callbacks) {
+    const { setUrl, getUrl, reloadPage } = callbacks;
     const server = express();
 
     // Middleware
@@ -24,15 +28,29 @@ function createApiServer(setUrlCallback) {
     });
 
     // Routes
+
+    // Get current URL
+    server.get('/url', (req, res) => {
+        const currentUrl = getUrl();
+        res.json({ status: 'success', url: currentUrl });
+    });
+
+    // Set URL
     server.post('/set-url', (req, res) => {
         const newUrl = req.body.url;
 
         if (newUrl) {
-            setUrlCallback(newUrl);
+            setUrl(newUrl);
             res.json({ status: 'success', url: newUrl });
         } else {
             res.status(400).json({ status: 'error', message: 'Missing url parameter' });
         }
+    });
+
+    // Reload page
+    server.post('/reload', (req, res) => {
+        reloadPage();
+        res.json({ status: 'success', message: 'Page reload triggered' });
     });
 
     return server;

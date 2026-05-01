@@ -99,7 +99,11 @@ app.on('before-quit', onBeforeQuit);
 app.on('window-all-closed', onWindowAllClosed);
 
 // --- API Server ---
-const server = createApiServer(setKioskUrl);
+const server = createApiServer({
+    setUrl: setKioskUrl,
+    getUrl: () => store.get('kioskUrl') || '',
+    reloadPage: reloadKioskPage,
+});
 
 server.listen(config.PORT, '0.0.0.0', () => {
     console.log(`[INFO] Kiosk API listening on port ${config.PORT}`);
