@@ -4,6 +4,9 @@
  * Orchestrates the kiosk application lifecycle.
  */
 
+// Load environment variables first (before any other requires)
+require('dotenv').config({ path: __dirname + '/.env' });
+
 const { app } = require('electron');
 const Store = require('electron-store');
 const log = require('electron-log');

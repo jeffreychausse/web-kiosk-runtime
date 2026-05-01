@@ -5,18 +5,16 @@
  * via the Tasktoolkit library.
  */
 
-const path = require('path');
-
-// === TASKTOOLKIT CONFIGURATION (edit these values) ===
+// === TASKTOOLKIT CONFIGURATION (loaded from environment variables) ===
 const CONFIG = {
-    projectId: 'mf-interactive',           // Project identifier for MQTT topic
-    mqttBroker: '10.10.10.200',         // MQTT broker hostname/IP
-    datastoreHost: '10.10.10.200',   // Datastore hostname/IP
-    softwareName: 'KioskApp',               // Internal software name
-    softwareDisplayName: 'Kiosk Application', // Display name in Control Center
-    catalogName: 'Kiosk Application',       // Catalog name
-    localIp: '0.0.0.0',                     // Local IP address (set dynamically if needed)
-    updateIntervalMs: 5000,                   // API update interval (~30fps)
+    projectId: process.env.TASKTOOLKIT_PROJECT_ID,
+    mqttBroker: process.env.TASKTOOLKIT_MQTT_BROKER,
+    datastoreHost: process.env.TASKTOOLKIT_DATASTORE_HOST,
+    softwareName: process.env.TASKTOOLKIT_SOFTWARE_NAME,
+    softwareDisplayName: process.env.TASKTOOLKIT_SOFTWARE_DISPLAY_NAME,
+    catalogName: process.env.TASKTOOLKIT_CATALOG_NAME,
+    localIp: process.env.TASKTOOLKIT_LOCAL_IP,
+    updateIntervalMs: parseInt(process.env.TASKTOOLKIT_UPDATE_INTERVAL_MS, 10),
 };
 
 // Load the Tasktoolkit library

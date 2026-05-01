@@ -14,7 +14,8 @@
     "electron": "^40.9.2"
   },
   "dependencies": {
-"@momentfactory/node-mf-tasktoolkit-dll": "file:./lib/tasktoolkit",
+    "@momentfactory/node-mf-tasktoolkit-dll": "file:./lib/tasktoolkit",
+    "dotenv": "^17.4.2",
     "electron-log": "^5.4.3",
     "electron-store": "^6.0.1",
     "express": "^5.2.1",
