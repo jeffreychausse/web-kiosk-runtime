@@ -2,6 +2,8 @@
  * Centralized Configuration for Kiosk App
  */
 
+const paths = require('./paths');
+
 module.exports = {
     // API Server
     PORT: parseInt(process.env.API_PORT, 10),
@@ -10,7 +12,7 @@ module.exports = {
     LOG_MAX_SIZE: 5 * 1024 * 1024, // 5MB
     
     // Navigation
-    ERROR_PAGE: 'error.html',
+    ERROR_PAGE: paths.ERROR_PAGE,
     FALLBACK_DELAY_MS: 500,
     
     // Electron Window

@@ -5,6 +5,9 @@
  * via the Tasktoolkit library.
  */
 
+const path = require('path');
+const paths = require('./paths');
+
 // === TASKTOOLKIT CONFIGURATION (loaded from environment variables) ===
 const CONFIG = {
     projectId: process.env.TASKTOOLKIT_PROJECT_ID,
@@ -17,8 +20,8 @@ const CONFIG = {
     updateIntervalMs: parseInt(process.env.TASKTOOLKIT_UPDATE_INTERVAL_MS, 10),
 };
 
-// Load the Tasktoolkit library
-const CCTasktoolkit = require('./lib/tasktoolkit/Tasktoolkit');
+// Load the Tasktoolkit library using dynamic path
+const CCTasktoolkit = require(path.join(paths.TASKTOOLKIT_DIR, 'Tasktoolkit.js'));
 
 // Module state
 let toolkitProvider = null;

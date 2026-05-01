@@ -4,10 +4,12 @@
  * Orchestrates the kiosk application lifecycle.
  */
 
-// Load environment variables first (before any other requires)
-require('dotenv').config({ path: __dirname + '/.env' });
-
 const { app } = require('electron');
+const paths = require('./paths');
+
+// Load environment variables using dynamic path
+require('dotenv').config({ path: paths.ENV_FILE });
+
 const Store = require('electron-store');
 const log = require('electron-log');
 
@@ -22,11 +24,13 @@ log.errorHandler.startCatching();
 Object.assign(console, log.functions);
 
 console.log('[BOOT] Kiosk boot sequence initiated...');
+console.log(`[INFO] Running in ${paths.isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
+console.log(`[INFO] Base path: ${paths.BASE_PATH}`);
 console.log('[INFO] Log file location:', log.transports.file.getFile().path);
 
 // --- Persistence Setup ---
 const store = new Store({
-    cwd: __dirname,
+    cwd: paths.STORE_DIR,
     name: config.STORE.name,
 });
 

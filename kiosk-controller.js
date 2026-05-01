@@ -5,7 +5,6 @@
  */
 
 const { app, BrowserWindow } = require('electron');
-const path = require('path');
 const config = require('./config');
 
 let mainWindow = null;
@@ -39,7 +38,7 @@ function navigate(targetUrl) {
         console.error(`[ERROR] Could not reach ${targetUrl}. Reason: ${err.message}`);
 
         // Safety check: If the error page itself fails, stop trying
-        if (targetUrl.includes(config.ERROR_PAGE)) {
+        if (targetUrl.includes('error.html')) {
             console.error('[ERROR] The error page is broken too!');
             return;
         }
@@ -48,7 +47,7 @@ function navigate(targetUrl) {
         setTimeout(() => {
             console.log('[NAV] Loading local error fallback...');
             
-            mainWindow.loadFile(path.join(__dirname, config.ERROR_PAGE), {
+            mainWindow.loadFile(config.ERROR_PAGE, {
                 query: { failedUrl: targetUrl }
             }).catch(fallbackErr => {
                 console.error('[ERROR] Even the local file failed:', fallbackErr);
@@ -63,7 +62,7 @@ function navigate(targetUrl) {
  */
 function loadErrorPage() {
     if (!mainWindow) return;
-    mainWindow.loadFile(path.join(__dirname, config.ERROR_PAGE));
+    mainWindow.loadFile(config.ERROR_PAGE);
 }
 
 /**
