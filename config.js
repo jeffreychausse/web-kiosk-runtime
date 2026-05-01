@@ -4,7 +4,7 @@
 
 module.exports = {
     // API Server
-    PORT: parseInt(process.env.PORT, 10),
+    PORT: parseInt(process.env.API_PORT, 10),
     
     // Logging
     LOG_MAX_SIZE: 5 * 1024 * 1024, // 5MB
