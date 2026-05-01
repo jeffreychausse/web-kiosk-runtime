@@ -1,17 +1,20 @@
 {
   "name": "kiosk-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "Kiosk application for displaying web content",
   "main": "main.js",
   "scripts": {
-    "start": "XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-run-session -- electron . --no-sandbox --ozone-platform=wayland --enable-features=VaapiVideoDecoder,CanvasOopRasterization --use-gl=angle --use-angle=gl --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --disable-webgl2-gl-context"
+    "start": "XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-run-session -- electron . --no-sandbox --ozone-platform=wayland --enable-features=VaapiVideoDecoder,CanvasOopRasterization --use-gl=angle --use-angle=gl --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --disable-webgl2-gl-context",
+    "build": "electron-builder --linux",
+    "build:dir": "electron-builder --linux --dir"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "electron": "^40.9.2"
+    "electron": "^40.9.2",
+    "electron-builder": "^26.8.1"
   },
   "dependencies": {
     "@momentfactory/node-mf-tasktoolkit-dll": "file:./lib/tasktoolkit",
@@ -20,5 +23,22 @@
     "electron-store": "^6.0.1",
     "express": "^5.2.1",
     "koffi": "^2.8.11"
+  },
+  "build": {
+    "appId": "com.kiosk.app",
+    "productName": "Kiosk App",
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility"
+    },
+    "files": [
+      "main.js",
+      "api-server.js",
+      "config.js",
+      "kiosk-controller.js",
+      "paths.js",
+      "tasktoolkit-integration.js",
+      "package.json"
+    ]
   }
 }

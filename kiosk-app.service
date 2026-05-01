@@ -14,13 +14,13 @@ WorkingDirectory=/opt/kiosk-app
 
 # --- ENVIRONMENT VARIABLES ---
 # Matches your working path, adapted for /opt/
-Environment=LD_LIBRARY_PATH=/opt/kiosk-app/lib/
+#Environment=LD_LIBRARY_PATH=/opt/kiosk-app/lib/
 Environment=XDG_RUNTIME_DIR=/run/user/0
 Environment=WAYLAND_DISPLAY=wayland-0
 
 # --- LAUNCH COMMAND ---
 # Executes your exact working command structure natively
-ExecStart=/usr/bin/dbus-run-session -- /opt/kiosk-app/node_modules/.bin/electron . --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
+ExecStart=/usr/bin/dbus-run-session -- /opt/kiosk-app/dist/'Kiosk App-1.0.0.AppImage' --appimage-extract-and-run --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
 
 # --- CRASH RECOVERY ---
 Restart=always

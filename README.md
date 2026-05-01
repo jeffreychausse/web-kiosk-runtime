@@ -61,31 +61,6 @@ This installs all dependencies defined in `package.json`:
    TASKTOOLKIT_UPDATE_INTERVAL_MS=5000
    ```
 
-## Running the App
-
-### Manual startup (without Tasktoolkit)
-
-```bash
-cd kiosk-app
-sudo env PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
-  dbus-run-session -- ./node_modules/.bin/electron . \
-  --no-sandbox --ozone-platform=wayland \
-  --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
-```
-
-### Manual startup (with Tasktoolkit)
-
-The Tasktoolkit native library requires `LD_LIBRARY_PATH` to be set:
-
-```bash
-cd kiosk-app
-sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/lib" PATH=$PATH \
-  XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
-  dbus-run-session -- ./node_modules/.bin/electron . \
-  --no-sandbox --ozone-platform=wayland \
-  --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
-```
-
 ## HTTP API (tasks also exposed to the Control Center)
 
 The app exposes an HTTP API on the configured `PORT` (default: 3333).
@@ -112,6 +87,46 @@ Logs are written to the Electron default log location:
 
 Log file location is printed on startup.
 
-## Systemd Service
+## Building the app
+
+To build the app using electron-builder, simply run:
+```bash
+bashcd kiosk-app && npm run build
+```
+
+## Running the app
+
+### DEV - Manual startup (without Tasktoolkit)
+
+```bash
+cd kiosk-app
+sudo env PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
+  dbus-run-session -- ./node_modules/.bin/electron . \
+  --no-sandbox --ozone-platform=wayland \
+  --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
+```
+
+### DEV - Manual startup (with Tasktoolkit)
+
+The Tasktoolkit native library requires `LD_LIBRARY_PATH` to be set:
+
+```bash
+cd kiosk-app
+sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/lib" PATH=$PATH \
+  XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
+  dbus-run-session -- ./node_modules/.bin/electron . \
+  --no-sandbox --ozone-platform=wayland \
+  --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
+```
+
+### PROD - Using the service file
 
 For production deployment, copy the whole folder to /opt and use the provided `kiosk-app.service` systemd unit file.
+
+### PROD - Manual startup using AppImage
+
+To manually run the AppImage from `/opt/kiosk-app`, run:
+
+```bash
+sudo WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/0 /opt/kiosk-app/dist/'Kiosk App-1.0.0.AppImage' --appimage-extract-and-run --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
+```
