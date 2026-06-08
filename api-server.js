@@ -12,10 +12,11 @@ const express = require('express');
  * @param {Function} callbacks.setUrl - Function to set the kiosk URL
  * @param {Function} callbacks.getUrl - Function to get the current URL
  * @param {Function} callbacks.reloadPage - Function to reload the current page
+ * @param {Function} callbacks.setOrientation - Function to set display orientation
  * @returns {express.Application} The configured Express app
  */
 function createApiServer(callbacks) {
-    const { setUrl, getUrl, reloadPage } = callbacks;
+    const { setUrl, getUrl, reloadPage, setOrientation } = callbacks;
     const server = express();
 
     // Middleware
@@ -51,6 +52,42 @@ function createApiServer(callbacks) {
     server.post('/reload', (req, res) => {
         reloadPage();
         res.json({ status: 'success', message: 'Page reload triggered' });
+    });
+
+    // Set display orientation
+    server.post('/api/settings/orientation', async (req, res) => {
+        const { orientation } = req.body;
+
+        if (!orientation) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Missing orientation parameter'
+            });
+        }
+
+        try {
+            const result = await setOrientation(orientation);
+
+            if (result.success) {
+                res.json({
+                    status: 'success',
+                    message: result.message,
+                    monitor: result.monitor,
+                    orientation: result.orientation
+                });
+            } else {
+                res.status(400).json({
+                    status: 'error',
+                    message: result.message
+                });
+            }
+        } catch (err) {
+            console.error(`[API] Orientation error: ${err.message}`);
+            res.status(500).json({
+                status: 'error',
+                message: `Internal server error: ${err.message}`
+            });
+        }
     });
 
     return server;

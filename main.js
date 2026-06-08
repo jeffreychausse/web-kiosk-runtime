@@ -4,7 +4,7 @@
  * Orchestrates the kiosk application lifecycle.
  */
 
-const { app } = require('electron');
+const { app, dialog } = require('electron');
 const paths = require('./paths');
 
 // Load environment variables using dynamic path
@@ -17,6 +17,37 @@ const config = require('./config');
 const kioskController = require('./kiosk-controller');
 const createApiServer = require('./api-server');
 const tasktoolkit = require('./tasktoolkit-integration');
+
+// --- Fail-Safe & Auto-Recovery Configuration
+
+// Permanently gag Electron's native error popups
+dialog.showErrorBox = function(title, content) {
+  console.error(`Suppressed Error Box: ${title}\n${content}`);
+};
+
+// Catch fatal errors and force the process to die
+process.on('uncaughtException', (error) => {
+  console.error('Fatal Uncaught Exception:', error);
+  process.exit(1); 
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Fatal Unhandled Rejection:', reason);
+  process.exit(1);
+});
+
+// Catch if the frontend UI itself crashes or freezes (White Screen of Death)
+app.on('web-contents-created', (event, contents) => {
+  contents.on('unresponsive', () => {
+    console.error('Frontend UI became unresponsive. Forcing restart...');
+    process.exit(1);
+  });
+  
+  contents.on('render-process-gone', (event, details) => {
+    console.error(`Frontend UI crashed (Reason: ${details.reason}). Forcing restart...`);
+    process.exit(1);
+  });
+});
 
 // --- Logging Configuration ---
 log.transports.file.maxSize = config.LOG_MAX_SIZE;
@@ -66,6 +97,7 @@ function onReady() {
     const tasktoolkitInitialized = tasktoolkit.init({
         setUrl: setKioskUrl,
         reloadPage: reloadKioskPage,
+        setOrientation: kioskController.setOrientation,
     });
 
     if (tasktoolkitInitialized) {
@@ -107,6 +139,7 @@ const server = createApiServer({
     setUrl: setKioskUrl,
     getUrl: () => store.get('kioskUrl') || '',
     reloadPage: reloadKioskPage,
+    setOrientation: kioskController.setOrientation,
 });
 
 server.listen(config.PORT, '0.0.0.0', () => {

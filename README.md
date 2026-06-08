@@ -80,6 +80,33 @@ curl -X POST http://localhost:3333/set-url -H "Content-Type: application/json" -
 curl -X POST http://localhost:3333/reload
 ```
 
+### Set Display Orientation
+Rotate the display by commanding Ubuntu Frame. The endpoint dynamically detects the connected monitor by reading the Linux DRM subsystem (`/sys/class/drm/`).
+
+**Valid orientation values:**
+- `landscape` - Normal horizontal orientation (0°)
+- `portrait_cw` - Rotated 90° clockwise
+- `portrait_ccw` - Rotated 90° counter-clockwise
+- `inverted` - Rotated 180° (upside down)
+
+```bash
+curl -X POST http://localhost:3333/api/settings/orientation \
+  -H "Content-Type: application/json" \
+  -d '{"orientation": "portrait_cw"}'
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "message": "Orientation set to 'portrait_cw'",
+  "monitor": "HDMI-A-1",
+  "orientation": "right"
+}
+```
+
+> **Note:** This feature requires Ubuntu Frame and root privileges. The application writes a temporary YAML configuration to `/tmp/kiosk-layout.yaml` and executes `snap set ubuntu-frame display=...`.
+
 ## Logs
 
 Logs are written to the Electron default log location:
@@ -91,7 +118,7 @@ Log file location is printed on startup.
 
 To build the app using electron-builder, simply run:
 ```bash
-bashcd kiosk-app && npm run build
+cd kiosk-app && npm run build
 ```
 
 ## Running the app
@@ -119,9 +146,50 @@ sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/lib" PATH=$PATH \
   --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
 ```
 
-### PROD - Using the service file
+### PROD - Using the systemd service
 
-For production deployment, copy the whole folder to /opt and use the provided `kiosk-app.service` systemd unit file.
+For production deployment, copy the whole folder to `/opt` and use the provided `kiosk-app.service` systemd unit file.
+
+**Install the service:**
+```bash
+sudo cp /opt/kiosk-app/kiosk-app.service /etc/systemd/system/
+sudo systemctl daemon-reload
+```
+
+**Start the service:**
+```bash
+sudo systemctl start kiosk-app
+```
+
+**Stop the service:**
+```bash
+sudo systemctl stop kiosk-app
+```
+
+**Restart the service:**
+```bash
+sudo systemctl restart kiosk-app
+```
+
+**Check service status:**
+```bash
+sudo systemctl status kiosk-app
+```
+
+**Enable at boot (auto-start):**
+```bash
+sudo systemctl enable kiosk-app
+```
+
+**Disable at boot:**
+```bash
+sudo systemctl disable kiosk-app
+```
+
+**View service logs:**
+```bash
+sudo journalctl -u kiosk-app -f
+```
 
 ### PROD - Manual startup using AppImage
 

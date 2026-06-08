@@ -83,6 +83,23 @@ function publishTaskCatalog() {
         5000 // 5 second timeout
     );
 
+    // Task: Set Orientation
+    toolkitProvider.Publish.CreateActionTask(
+        'SetOrientation',
+        'Set Display Orientation',
+        'Rotate the display orientation (landscape, portrait_cw, portrait_ccw, inverted)',
+        15000 // 15 second timeout
+    );
+    toolkitProvider.Publish.CreateParameter(
+        'orientation',
+        'Orientation',
+        'The display orientation to set',
+        CCTasktoolkit.CCTaskToolkitParameterDataType.String,
+        true // required
+    );
+    toolkitProvider.Publish.SetParameterDefaultValue('landscape');
+    toolkitProvider.Publish.SetParameterCandidates('landscape,portrait_cw,portrait_ccw,inverted');
+
     toolkitProvider.Publish.EndCatalog(true);
     console.log('[TASKTOOLKIT] Task catalog published.');
 }
@@ -211,6 +228,40 @@ function setupCallbacks() {
                         toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
                         return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Error;
                     }
+                } else if (taskName === 'SetOrientation') {
+                    // Find the orientation parameter
+                    const orientationParam = params.find(p => p.internalName === 'orientation');
+                    if (orientationParam && orientationParam.value) {
+                        const orientation = orientationParam.value;
+                        console.log(`[TASKTOOLKIT] SetOrientation task: ${orientation}`);
+                        
+                        if (appCallbacks && appCallbacks.setOrientation) {
+                            // setOrientation is async, so we need to handle it properly
+                            appCallbacks.setOrientation(orientation).then(result => {
+                                if (result.success) {
+                                    const feedback = `Orientation set to: ${orientation} (monitor: ${result.monitor})`;
+                                    toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                                } else {
+                                    const feedback = `Failed: ${result.message}`;
+                                    toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                                }
+                            }).catch(err => {
+                                const feedback = `Error: ${err.message}`;
+                                toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                            });
+                            
+                            // Return success immediately since the async operation will update feedback
+                            return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Success;
+                        } else {
+                            const feedback = 'setOrientation callback not available';
+                            toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                            return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Error;
+                        }
+                    } else {
+                        const feedback = 'Missing orientation parameter';
+                        toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                        return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Error;
+                    }
                 } else {
                     const feedback = `Unknown task: ${taskName}`;
                     toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
@@ -292,8 +343,8 @@ function init(callbacks) {
         return false;
     }
 
-    if (!callbacks || !callbacks.setUrl || !callbacks.reloadPage) {
-        console.error('[TASKTOOLKIT] Missing required callbacks (setUrl, reloadPage)');
+    if (!callbacks || !callbacks.setUrl || !callbacks.reloadPage || !callbacks.setOrientation) {
+        console.error('[TASKTOOLKIT] Missing required callbacks (setUrl, reloadPage, setOrientation)');
         return false;
     }
 
