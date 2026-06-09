@@ -1,5 +1,5 @@
 /**
- * Tasktoolkit Integration Module for Kiosk App
+ * Tasktoolkit Integration Module for Web Kiosk Runtime
  * 
  * This module handles all communication with Moment Factory's Control Center
  * via the Tasktoolkit library.

@@ -1,7 +1,7 @@
 /**
- * Kiosk App - Main Entry Point
+ * Web Kiosk Runtime - Main Entry Point
  * 
- * Orchestrates the kiosk application lifecycle.
+ * Orchestrates the web kiosk application lifecycle.
  */
 
 const { app, dialog } = require('electron');

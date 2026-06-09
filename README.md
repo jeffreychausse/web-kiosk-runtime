@@ -1,11 +1,11 @@
-# Kiosk App
+# Web Kiosk Runtime
 
 An Electron-based kiosk application that displays web content in fullscreen mode. It includes an HTTP API for remote URL control and integration with Moment Factory's Control Center via Tasktoolkit.
 
 ## Architecture
 
 ```
-kiosk-app/
+web-kiosk-runtime/
 ├── main.js                    # Application entry point
 ├── config.js                  # Centralized configuration (reads from env)
 ├── kiosk-controller.js        # Electron window management
@@ -26,7 +26,7 @@ kiosk-app/
 ## Installation
 
 ```bash
-cd kiosk-app
+cd web-kiosk-runtime
 npm install
 ```
 
@@ -54,9 +54,9 @@ This installs all dependencies defined in `package.json`:
    TASKTOOLKIT_PROJECT_ID=your-project-id
    TASKTOOLKIT_MQTT_BROKER=your-mqtt-broker-ip
    TASKTOOLKIT_DATASTORE_HOST=your-datastore-host-ip
-   TASKTOOLKIT_SOFTWARE_NAME=KioskApp
-   TASKTOOLKIT_SOFTWARE_DISPLAY_NAME=Kiosk Application
-   TASKTOOLKIT_CATALOG_NAME=Kiosk Application
+   TASKTOOLKIT_SOFTWARE_NAME=WebKiosk
+   TASKTOOLKIT_SOFTWARE_DISPLAY_NAME=Web Kiosk
+   TASKTOOLKIT_CATALOG_NAME=Web Kiosk
    TASKTOOLKIT_LOCAL_IP=0.0.0.0
    TASKTOOLKIT_UPDATE_INTERVAL_MS=5000
    ```
@@ -110,7 +110,7 @@ curl -X POST http://localhost:3333/api/settings/orientation \
 ## Logs
 
 Logs are written to the Electron default log location:
-- Linux: `~/.config/kiosk-app/logs/`
+- Linux: `~/.config/web-kiosk-runtime/logs/`
 
 Log file location is printed on startup.
 
@@ -118,7 +118,7 @@ Log file location is printed on startup.
 
 To build the app using electron-builder, simply run:
 ```bash
-cd kiosk-app && npm run build
+cd web-kiosk-runtime && npm run build
 ```
 
 ## Running the app
@@ -126,7 +126,7 @@ cd kiosk-app && npm run build
 ### DEV - Manual startup (without Tasktoolkit)
 
 ```bash
-cd kiosk-app
+cd web-kiosk-runtime
 sudo env PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
   dbus-run-session -- ./node_modules/.bin/electron . \
   --no-sandbox --ozone-platform=wayland \
@@ -138,8 +138,8 @@ sudo env PATH=$PATH XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
 The Tasktoolkit native library requires `LD_LIBRARY_PATH` to be set:
 
 ```bash
-cd kiosk-app
-sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/lib" PATH=$PATH \
+cd web-kiosk-runtime
+sudo env LD_LIBRARY_PATH="/opt/web-kiosk-runtime/lib" PATH=$PATH \
   XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 \
   dbus-run-session -- ./node_modules/.bin/electron . \
   --no-sandbox --ozone-platform=wayland \
@@ -148,53 +148,68 @@ sudo env LD_LIBRARY_PATH="/home/mofa/kiosk-app/lib" PATH=$PATH \
 
 ### PROD - Using the systemd service
 
-For production deployment, copy the whole folder to `/opt` and use the provided `kiosk-app.service` systemd unit file.
+For production deployment, copy the whole folder to `/opt` and use the provided `web-kiosk-runtime.service` systemd unit file.
+
+**Copy the files to /opt:**
+
+```bash
+sudo rsync -av --delete \
+  --include='dist/' \
+  --include='dist/Web-Kiosk-Runtime-1.0.0.AppImage' \
+  --include='.env' \
+  --include='kiosk-settings.json' \
+  --include='lib/***' \
+  --include='node_modules/' \
+  --include='node_modules/koffi/***' \
+  --include='web-kiosk-runtime.service' \
+  --exclude='*' \
+  /home/mofa/web-kiosk-runtime/ /opt/web-kiosk-runtime/
+```
 
 **Install the service:**
 ```bash
-sudo cp /opt/kiosk-app/kiosk-app.service /etc/systemd/system/
+sudo cp /opt/web-kiosk-runtime/web-kiosk-runtime.service /etc/systemd/system/
 sudo systemctl daemon-reload
 ```
 
 **Start the service:**
 ```bash
-sudo systemctl start kiosk-app
+sudo systemctl start web-kiosk-runtime
 ```
 
 **Stop the service:**
 ```bash
-sudo systemctl stop kiosk-app
+sudo systemctl stop web-kiosk-runtime
 ```
 
 **Restart the service:**
 ```bash
-sudo systemctl restart kiosk-app
+sudo systemctl restart web-kiosk-runtime
 ```
 
 **Check service status:**
 ```bash
-sudo systemctl status kiosk-app
+sudo systemctl status web-kiosk-runtime
 ```
 
 **Enable at boot (auto-start):**
 ```bash
-sudo systemctl enable kiosk-app
+sudo systemctl enable web-kiosk-runtime
 ```
 
 **Disable at boot:**
 ```bash
-sudo systemctl disable kiosk-app
+sudo systemctl disable web-kiosk-runtime
 ```
 
 **View service logs:**
 ```bash
-sudo journalctl -u kiosk-app -f
+sudo journalctl -u web-kiosk-runtime -f
 ```
 
 ### PROD - Manual startup using AppImage
 
-To manually run the AppImage from `/opt/kiosk-app`, run:
+To manually run the AppImage from `/opt/web-kiosk-runtime`, run:
 
 ```bash
-sudo WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/0 /opt/kiosk-app/dist/'Kiosk App-1.0.0.AppImage' --appimage-extract-and-run --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost
-```
+sudo WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/0 /opt/web-kiosk-runtime/dist/'Web-Kiosk-Runtime-1.0.0.AppImage' --appimage-extract-and-run --no-sandbox --ozone-platform=wayland --ignore-gpu-blocklist --disable-gpu-sandbox --gpu-no-context-lost

@@ -1,5 +1,5 @@
 /**
- * Centralized Configuration for Kiosk App
+ * Centralized Configuration for Web Kiosk Runtime
  */
 
 const paths = require('./paths');

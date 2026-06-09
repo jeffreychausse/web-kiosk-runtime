@@ -1,16 +1,16 @@
 /**
- * Dynamic Path Configuration for Kiosk App
+ * Dynamic Path Configuration for Web Kiosk Runtime
  * 
  * Computes paths based on whether running in development or production.
  * - Development: Uses the source directory (__dirname)
- * - Production: Uses /opt/kiosk-app (electron-builder install location)
+ * - Production: Uses /opt/web-kiosk-runtime (electron-builder install location)
  */
 
 const { app } = require('electron');
 const path = require('path');
 
 // Determine base path based on packaging status
-const BASE_PATH = app.isPackaged ? '/opt/kiosk-app' : __dirname;
+const BASE_PATH = app.isPackaged ? '/opt/web-kiosk-runtime' : __dirname;
 
 module.exports = {
     // Base directory

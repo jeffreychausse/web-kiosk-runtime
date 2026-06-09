@@ -1,7 +1,7 @@
 {
-  "name": "kiosk-app",
+  "name": "web-kiosk-runtime",
   "version": "1.0.0",
-  "description": "Kiosk application for displaying web content",
+  "description": "Web Kiosk Runtime for displaying web content",
   "main": "main.js",
   "scripts": {
     "start": "XDG_RUNTIME_DIR=/run/user/0 WAYLAND_DISPLAY=wayland-0 dbus-run-session -- electron . --no-sandbox --ozone-platform=wayland --enable-features=VaapiVideoDecoder,CanvasOopRasterization --use-gl=angle --use-angle=gl --ignore-gpu-blocklist --enable-gpu-rasterization --enable-webgl --disable-webgl2-gl-context",
@@ -25,8 +25,8 @@
     "koffi": "^2.8.11"
   },
   "build": {
-    "appId": "com.kiosk.app",
-    "productName": "Kiosk App",
+    "appId": "com.webkiosk.runtime",
+    "productName": "Web-Kiosk-Runtime",
     "linux": {
       "target": "AppImage",
       "category": "Utility"
