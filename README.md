@@ -55,7 +55,6 @@ This installs all dependencies defined in `package.json`:
    TASKTOOLKIT_MQTT_BROKER=your-mqtt-broker-ip
    TASKTOOLKIT_DATASTORE_HOST=your-datastore-host-ip
    TASKTOOLKIT_SOFTWARE_NAME=WebKiosk
-   TASKTOOLKIT_SOFTWARE_DISPLAY_NAME=Web Kiosk
    TASKTOOLKIT_CATALOG_NAME=Web Kiosk
    TASKTOOLKIT_LOCAL_IP=0.0.0.0
    TASKTOOLKIT_UPDATE_INTERVAL_MS=5000
