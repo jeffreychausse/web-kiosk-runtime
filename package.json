@@ -17,7 +17,6 @@
     "electron-builder": "^26.8.1"
   },
   "dependencies": {
-    "@momentfactory/node-mf-tasktoolkit-dll": "file:./lib/tasktoolkit",
     "dotenv": "^17.4.2",
     "electron-log": "^5.4.3",
     "electron-store": "^6.0.1",
@@ -38,7 +37,11 @@
       "kiosk-controller.js",
       "paths.js",
       "tasktoolkit-integration.js",
-      "package.json"
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/koffi/**/*"
     ]
   }
 }

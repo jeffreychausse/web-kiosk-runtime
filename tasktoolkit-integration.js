@@ -6,7 +6,40 @@
  */
 
 const path = require('path');
+const os = require('os');
+const Module = require('module');
 const paths = require('./paths');
+
+// === KOFFI MODULE RESOLUTION HOOK ===
+// When running as an AppImage, external scripts (like Tasktoolkit.js in /opt/...)
+// cannot resolve dependencies bundled inside the ASAR archive. We intercept
+// require('koffi') calls from external scripts and redirect them to our bundled version.
+
+// Pre-load koffi from inside our bundle and get its resolved path
+const koffi = require('koffi');
+const koffiResolvedPath = require.resolve('koffi');
+console.log(`[TASKTOOLKIT] Bundled koffi resolved at: ${koffiResolvedPath}`);
+
+// Store the original _resolveFilename function
+const originalResolveFilename = Module._resolveFilename;
+
+// Monkey-patch Module._resolveFilename to intercept 'koffi' requests from external scripts
+Module._resolveFilename = function(request, parent, isMain, options) {
+    // If an external script (outside our ASAR) is requesting 'koffi', redirect to our bundled version
+    if (request === 'koffi' && parent && parent.filename) {
+        // Check if the requesting file is outside our bundle (e.g., in /opt/web-kiosk-runtime/)
+        const isExternalScript = !parent.filename.includes('.asar') && 
+                                  !parent.filename.includes(__dirname);
+        
+        if (isExternalScript) {
+            console.log(`[TASKTOOLKIT] Redirecting koffi require from external script: ${parent.filename}`);
+            return koffiResolvedPath;
+        }
+    }
+    
+    // For all other cases, use the original resolution
+    return originalResolveFilename.call(this, request, parent, isMain, options);
+};
 
 // === TASKTOOLKIT CONFIGURATION (loaded from environment variables) ===
 const CONFIG = {
@@ -14,7 +47,7 @@ const CONFIG = {
     mqttBroker: process.env.TASKTOOLKIT_MQTT_BROKER,
     datastoreHost: process.env.TASKTOOLKIT_DATASTORE_HOST,
     softwareName: process.env.TASKTOOLKIT_SOFTWARE_NAME,
-    softwareDisplayName: process.env.TASKTOOLKIT_SOFTWARE_DISPLAY_NAME,
+    softwareDisplayName: `${os.hostname()}-web-kiosk`,
     catalogName: process.env.TASKTOOLKIT_CATALOG_NAME,
     localIp: process.env.TASKTOOLKIT_LOCAL_IP,
     updateIntervalMs: parseInt(process.env.TASKTOOLKIT_UPDATE_INTERVAL_MS, 10),
@@ -94,7 +127,7 @@ function publishTaskCatalog() {
         'orientation',
         'Orientation',
         'The display orientation to set',
-        CCTasktoolkit.CCTaskToolkitParameterDataType.String,
+        CCTasktoolkit.CCTaskToolkitParameterDataType.StringList,
         true // required
     );
     toolkitProvider.Publish.SetParameterDefaultValue('landscape');

@@ -158,9 +158,9 @@ sudo rsync -av --delete \
   --include='dist/Web-Kiosk-Runtime-1.0.0.AppImage' \
   --include='.env' \
   --include='kiosk-settings.json' \
+  --include='error.html' \
+  --include='assets/***' \
   --include='lib/***' \
-  --include='node_modules/' \
-  --include='node_modules/koffi/***' \
   --include='web-kiosk-runtime.service' \
   --exclude='*' \
   /home/mofa/web-kiosk-runtime/ /opt/web-kiosk-runtime/
