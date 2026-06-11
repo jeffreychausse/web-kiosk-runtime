@@ -1,26 +1,60 @@
 /**
- * Tasktoolkit Integration Module for Kiosk App
+ * Tasktoolkit Integration Module for Web Kiosk Runtime
  * 
  * This module handles all communication with Moment Factory's Control Center
  * via the Tasktoolkit library.
  */
 
 const path = require('path');
+const os = require('os');
+const Module = require('module');
+const paths = require('./paths');
 
-// === TASKTOOLKIT CONFIGURATION (edit these values) ===
-const CONFIG = {
-    projectId: 'mf-interactive',           // Project identifier for MQTT topic
-    mqttBroker: '10.10.10.200',         // MQTT broker hostname/IP
-    datastoreHost: '10.10.10.200',   // Datastore hostname/IP
-    softwareName: 'KioskApp',               // Internal software name
-    softwareDisplayName: 'Kiosk Application', // Display name in Control Center
-    catalogName: 'Kiosk Application',       // Catalog name
-    localIp: '0.0.0.0',                     // Local IP address (set dynamically if needed)
-    updateIntervalMs: 5000,                   // API update interval (~30fps)
+// === KOFFI MODULE RESOLUTION HOOK ===
+// When running as an AppImage, external scripts (like Tasktoolkit.js in /opt/...)
+// cannot resolve dependencies bundled inside the ASAR archive. We intercept
+// require('koffi') calls from external scripts and redirect them to our bundled version.
+
+// Pre-load koffi from inside our bundle and get its resolved path
+const koffi = require('koffi');
+const koffiResolvedPath = require.resolve('koffi');
+console.log(`[TASKTOOLKIT] Bundled koffi resolved at: ${koffiResolvedPath}`);
+
+// Store the original _resolveFilename function
+const originalResolveFilename = Module._resolveFilename;
+
+// Monkey-patch Module._resolveFilename to intercept 'koffi' requests from external scripts
+Module._resolveFilename = function(request, parent, isMain, options) {
+    // If an external script (outside our ASAR) is requesting 'koffi', redirect to our bundled version
+    if (request === 'koffi' && parent && parent.filename) {
+        // Check if the requesting file is outside our bundle (e.g., in /opt/web-kiosk-runtime/)
+        const isExternalScript = !parent.filename.includes('.asar') && 
+                                  !parent.filename.includes(__dirname);
+        
+        if (isExternalScript) {
+            console.log(`[TASKTOOLKIT] Redirecting koffi require from external script: ${parent.filename}`);
+            return koffiResolvedPath;
+        }
+    }
+    
+    // For all other cases, use the original resolution
+    return originalResolveFilename.call(this, request, parent, isMain, options);
 };
 
-// Load the Tasktoolkit library
-const CCTasktoolkit = require('./@momentfactory_node-mf-tasktoolkit-dll-3.8.3/@momentfactory_node-mf-tasktoolkit-dll-3.8.3/package/Tasktoolkit');
+// === TASKTOOLKIT CONFIGURATION (loaded from environment variables) ===
+const CONFIG = {
+    projectId: process.env.TASKTOOLKIT_PROJECT_ID,
+    mqttBroker: process.env.TASKTOOLKIT_MQTT_BROKER,
+    datastoreHost: process.env.TASKTOOLKIT_DATASTORE_HOST,
+    softwareName: process.env.TASKTOOLKIT_SOFTWARE_NAME,
+    softwareDisplayName: `${os.hostname()}-web-kiosk`,
+    catalogName: process.env.TASKTOOLKIT_CATALOG_NAME,
+    localIp: process.env.TASKTOOLKIT_LOCAL_IP,
+    updateIntervalMs: parseInt(process.env.TASKTOOLKIT_UPDATE_INTERVAL_MS, 10),
+};
+
+// Load the Tasktoolkit library using dynamic path
+const CCTasktoolkit = require(path.join(paths.TASKTOOLKIT_DIR, 'Tasktoolkit.js'));
 
 // Module state
 let toolkitProvider = null;
@@ -81,6 +115,23 @@ function publishTaskCatalog() {
         'Reload the current page in the kiosk browser',
         5000 // 5 second timeout
     );
+
+    // Task: Set Orientation
+    toolkitProvider.Publish.CreateActionTask(
+        'SetOrientation',
+        'Set Display Orientation',
+        'Rotate the display orientation (landscape, portrait_cw, portrait_ccw, inverted)',
+        15000 // 15 second timeout
+    );
+    toolkitProvider.Publish.CreateParameter(
+        'orientation',
+        'Orientation',
+        'The display orientation to set',
+        CCTasktoolkit.CCTaskToolkitParameterDataType.StringList,
+        true // required
+    );
+    toolkitProvider.Publish.SetParameterDefaultValue('landscape');
+    toolkitProvider.Publish.SetParameterCandidates('landscape,portrait_cw,portrait_ccw,inverted');
 
     toolkitProvider.Publish.EndCatalog(true);
     console.log('[TASKTOOLKIT] Task catalog published.');
@@ -210,6 +261,40 @@ function setupCallbacks() {
                         toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
                         return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Error;
                     }
+                } else if (taskName === 'SetOrientation') {
+                    // Find the orientation parameter
+                    const orientationParam = params.find(p => p.internalName === 'orientation');
+                    if (orientationParam && orientationParam.value) {
+                        const orientation = orientationParam.value;
+                        console.log(`[TASKTOOLKIT] SetOrientation task: ${orientation}`);
+                        
+                        if (appCallbacks && appCallbacks.setOrientation) {
+                            // setOrientation is async, so we need to handle it properly
+                            appCallbacks.setOrientation(orientation).then(result => {
+                                if (result.success) {
+                                    const feedback = `Orientation set to: ${orientation} (monitor: ${result.monitor})`;
+                                    toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                                } else {
+                                    const feedback = `Failed: ${result.message}`;
+                                    toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                                }
+                            }).catch(err => {
+                                const feedback = `Error: ${err.message}`;
+                                toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                            });
+                            
+                            // Return success immediately since the async operation will update feedback
+                            return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Success;
+                        } else {
+                            const feedback = 'setOrientation callback not available';
+                            toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                            return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Error;
+                        }
+                    } else {
+                        const feedback = 'Missing orientation parameter';
+                        toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
+                        return CCTasktoolkit.CCTaskToolkitTaskExecutionResult.Error;
+                    }
                 } else {
                     const feedback = `Unknown task: ${taskName}`;
                     toolkitProvider.Logic.SetTaskExecutionFeedback(feedback, feedback.length, '', 0);
@@ -291,8 +376,8 @@ function init(callbacks) {
         return false;
     }
 
-    if (!callbacks || !callbacks.setUrl || !callbacks.reloadPage) {
-        console.error('[TASKTOOLKIT] Missing required callbacks (setUrl, reloadPage)');
+    if (!callbacks || !callbacks.setUrl || !callbacks.reloadPage || !callbacks.setOrientation) {
+        console.error('[TASKTOOLKIT] Missing required callbacks (setUrl, reloadPage, setOrientation)');
         return false;
     }
 

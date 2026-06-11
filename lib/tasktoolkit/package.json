@@ -1,0 +1,32 @@
+{
+  "name": "@momentfactory/node-mf-tasktoolkit-dll",
+  "version": "3.8.3",
+  "description": "Javascript universal module wrapping Moment Factory's Tasktoolkit dll API",
+  "main": "Tasktoolkit.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:momentfactory/mofalib/nodejs/node-mf-tasktoolkit-dll.git"
+  },
+  "keywords": [
+    "pulse, heartbeat, control center"
+  ],
+  "author": "Sun-Lay Gagneux",
+  "license": "Apache",
+  "dependencies": {
+    "koffi": "^2.8.11"
+  },
+  "cpu": [
+    "x64",
+    "ia32"
+  ],
+  "os": [
+    "win32",
+    "linux"
+  ],
+  "directories": {
+    "bin": "bin"
+  }
+}
